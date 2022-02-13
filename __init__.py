@@ -1,6 +1,6 @@
 ################################################################################################################################
 #
-# Copyright (c) 2020, Advance Software Limited. All rights reserved.
+# Copyright (c) 2002-2022, Advance Software Limited. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification are permitted provided that the following conditions are met:
@@ -76,7 +76,7 @@ class XSG_Export(bpy.types.Operator) :
 
 	bl_idname = "root.xsg"
 	bl_label = "<><> Export XSG"
-	filepath = StringProperty(subtype='FILE_PATH')
+	filepath: StringProperty(subtype='FILE_PATH')
 
 	# Export options
 	selected_only = BoolProperty(name="Selected objects only", description="Export only selected objects", default=selected_only)

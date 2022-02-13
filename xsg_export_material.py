@@ -60,12 +60,12 @@ class Export_Material:
 				if skip == False:
 					Export_Material.Part_Write(exp, mtl, "diffuse", diffuse, -1)
 					
-				if principled_bsdf.inputs[6].is_linked:
-					Export_Material.Part_Write(exp, mtl, "specular", principled_bsdf.inputs[6], -1)
+				if principled_bsdf.inputs['Specular'].is_linked:
+					Export_Material.Part_Write(exp, mtl, "specular", principled_bsdf.inputs['Specular'], -1)
 					
 					
 				# We use self illum as constant channel for now
-				constant_input = principled_bsdf.inputs[17]
+				constant_input = principled_bsdf.inputs['Emission']
 				skip = False				
 				
 				if constant_input.is_linked == False :			
@@ -78,7 +78,7 @@ class Export_Material:
 				
 				
 				
-				normal_map_input = principled_bsdf.inputs[19]
+				normal_map_input = principled_bsdf.inputs['Normal']
 				
 				
 				
