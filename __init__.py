@@ -29,7 +29,7 @@ bl_info = {
 	"name": "XSG Exporter",
 	"author": "Advance Software Limited",
 	"version": (0, 7, 0),
-	"blender": (2, 90, 0),
+	"blender": (3, 0, 0),
 	"location": "File > Export > XSG (.xsg)",
 	"description": "<><> XSG 3D web exporter",
 	"wiki_url": "http://advance-software.com/xsg",
