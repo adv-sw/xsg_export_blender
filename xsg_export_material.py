@@ -148,7 +148,8 @@ class Export_Material:
 		if color != None:
 			exp.file.Write('color="{:f} {:f} {:f}"'.format(color[0], color[1], color[2]), Indent=False)
 		
-		texture_path = bpy.path.abspath(node.image.filepath, exp.src_dir)
+        # TODO: if first char is '.', prepend current directory.
+		texture_path = bpy.path.abspath(node.image.filepath); #, exp.src_dir)
 		
 		texture_filename = bpy.path.basename(texture_path)
 		
