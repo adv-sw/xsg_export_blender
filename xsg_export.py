@@ -1,6 +1,6 @@
 ################################################################################################################################
 #
-# Copyright (c) 2020, Advance Software Limited. All rights reserved.
+# Copyright (c) 2020 - 2022, Advance Software Limited. All rights reserved.
 #
 # Redistribution and use in source and binary forms with or without
 # modification are permitted provided that the following conditions are met:
@@ -98,8 +98,18 @@ class XSG_Export:
 		self.root = os.path.dirname(bpy.data.filepath)
 		
 		# Export scene recursively
-		self.Convert_Scene(bpy.data.filepath, self.config.filepath)			
 
+		if self.config.selected_only:
+			export_list = list(self.context.selected_objects)
+		else:
+			export_list = list(self.context.scene.objects)
+
+		if self.config.seperate:
+			for export in export_list:
+				path = os.path.dirname(self.config.filepath) + "/" + export.name + ".xsg"
+				self.Convert_Scene(bpy.data.filepath, path, [export], 1)
+		else:
+			self.Convert_Scene(bpy.data.filepath, self.config.filepath, export_list, 0)
 
 	#def Export_Referenced_Objects(self, export_dir): # This version not currently used as can't currently access linked scene's custom properties whilst parent is loaded.
 
@@ -128,7 +138,7 @@ class XSG_Export:
 	#			robj.dupli_list_clear()
 				
 				# Can't do this yet as no scene access as of 2.79
-				#self.Convert_Scene(asset_path, export_path, objs, robj.instance_collection.scene)
+				#self.Convert_Scene(asset_path, export_path, objs, robj.instance_collection.scene, 0)
 		
 
 	# [WORKAROUND] : Export referenced objects via scene load/unload method.
@@ -163,14 +173,14 @@ class XSG_Export:
 			bpy.ops.wm.open_mainfile(filepath=asset_path)
 			changed = True
 			
-			self.Convert_Scene(asset_path, export_path)
+			self.Convert_Scene(asset_path, export_path, 0)
 			
 		# Return current .blend file to the one we started with.
 		if changed == True :
 			bpy.ops.wm.open_mainfile(filepath=keep)
 
 
-	def Convert_Scene(self, src_path, export_path):
+	def Convert_Scene(self, src_path, export_path, export_list, flags):
 
 		# Current implementation requires us to always export from the current main scene, loading and unloading as required
 		# because there's no other way of accessing linked scene user defined properties, which we require access to.
@@ -187,17 +197,11 @@ class XSG_Export:
 			self.default_reflection_map = None
 		
 		# DBG
-		if self.default_reflection_map != None:
-			print("\n// Viewport reflection map : ")
-			print(self.default_reflection_map)
-			print("\n\n")
+		#if self.default_reflection_map != None:
+		#	print("\n// Viewport reflection map : ")
+		#	print(self.default_reflection_map)
+		#	print("\n\n")
 			
-			
-		if self.config.selected_only:
-			export_list = list(self.context.selected_objects)
-		else:
-			export_list = list(self.context.scene.objects)
-
 		self.Log("Convert_Scene : {}".format(src_path))
 		
 		self.src_dir = os.path.dirname(src_path)
@@ -311,7 +315,7 @@ class XSG_Export:
 
 		self.Log("Write[open] : " + export_path)
 
-		self.Write_Scene()
+		self.Write_Scene(flags)
 			
 		self.Log("Write[close]")
 		self.file.Close()
@@ -330,7 +334,7 @@ class XSG_Export:
 		# Convert from Blender 'Z' up to Infinity/xsg 'Y' up coordinate system.
 		return self.flip_axis_transform_inverse @ t @ self.flip_axis_transform
 			
-	def Write_Scene(self):
+	def Write_Scene(self, flags):
 
 		self.XSG_Write_Header()
 
@@ -365,7 +369,7 @@ class XSG_Export:
 		self.file.Indent()
 		
 		for obj in self.root_export_list:
-			obj.Write()
+			obj.Write(flags)
 		
 		self.file.Unindent()
 
@@ -493,7 +497,7 @@ class Export_Reference_Group(Export_Base):
 	def __repr__(self):
 		return "[Export_Base_Reference: {}]".format(self.name)
 		
-	def Write(self):
+	def Write(self, flags):
 		t = self.exporter.Transform_Convert(self.blender_object.matrix_local)
 		self.Write_Node_Begin(self.name, t)
 		self.exporter.file.Write('<object src="')
@@ -536,8 +540,14 @@ class Export_Null(Export_Base):
 	def __repr__(self):
 		return "[Export_Null: {}]".format(self.name)
 		
-	def Write(self):
+	def Write(self, flags):
 		t = self.exporter.Transform_Convert(self.blender_object.matrix_local)
+
+		if (flags & 1) != 0 : # skip position
+			t[0][3]=0
+			t[1][3]=0
+			t[2][3]=0
+            
 		self.Write_Node_Begin(self.name, t)
 		self.Write_Children()
 		self.Write_Node_End()
@@ -553,9 +563,15 @@ class Export_Camera(Export_Base):
 	def __repr__(self):
 		return "[Export_Camera: {}]".format(self.name)
 
-	def Write(self):
+	def Write(self, flags):
 		t = self.exporter.Transform_Convert(self.blender_object.matrix_local)
 		t = Util.Transform_Adjust_Projector(t)
+        
+		if (flags & 1) != 0 : # skip position
+			t[0][3]=0
+			t[1][3]=0
+			t[2][3]=0
+        
 		self.Write_Node_Begin(self.name, t)
 		self.exporter.file.Write("<camera/>\n")
 		self.Write_Children()
@@ -569,12 +585,18 @@ class Export_Light(Export_Base):
 	def __repr__(self):
 		return "[Export_Light: {}]".format(self.name)
 
-	def Write(self):
+	def Write(self, flags):
 		
 		light = self.blender_object.data
 		
 		t = self.exporter.Transform_Convert(self.blender_object.matrix_local)
 		t = Util.Transform_Adjust_Projector(t)
+        
+		if (flags & 1) != 0 : # skip position
+			t[0][3]=0
+			t[1][3]=0
+			t[2][3]=0
+        
 		self.Write_Node_Begin(self.name, t)
 
 		# Defaults
@@ -645,7 +667,7 @@ class Export_Skin(Export_Base):
 	def __repr__(self):
 		return "[Export_Skin: {}]".format(self.name)
 	
-	def Write(self):
+	def Write(self, flags):
 		blender_armature = self.blender_object
 		t = self.exporter.Transform_Convert(self.blender_object.matrix_local)
 		self.Write_Node_Begin(self.name, t)

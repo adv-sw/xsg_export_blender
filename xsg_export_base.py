@@ -15,8 +15,14 @@ class Export_Base: # Base class, do not use directly
 	def __repr__(self):
 		return "[Export_Base: {}]".format(self.blender_object.name)
 
-	def Write(self):
+	def Write(self, flags):
 		t = self.exporter.Transform_Convert(self.blender_object.matrix_local)
+
+		if (flags & 1) != 0 : # skip position
+			t[0][3]=0
+			t[1][3]=0
+			t[2][3]=0
+        
 		self.Write_Node_Begin(self.name, t)
 		self.Write_Children()
 		self.Write_Node_End()

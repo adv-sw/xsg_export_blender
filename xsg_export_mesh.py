@@ -113,7 +113,7 @@ class Export_Mesh(Export_Base):
 	def __repr__(self):
 		return "[Export_Mesh: {}]".format(self.name)
 
-	def Write(self):
+	def Write(self, flags):
 
 		# Current implementation requires an identity transform on skinned mesh as vertices are calculated in world space not skin space.
 		blender_armatures = Util.Modifier_Armatures_Collect(self.blender_object)
@@ -121,6 +121,11 @@ class Export_Mesh(Export_Base):
 			t = Matrix()
 		else:
 			t = self.exporter.Transform_Convert(self.blender_object.matrix_local)
+            
+		if (flags & 1) != 0 : # skip position
+			t[0][3]=0
+			t[1][3]=0
+			t[2][3]=0
 			
 		self.Write_Node_Begin(self.name, t)
 
@@ -206,7 +211,7 @@ class Export_Mesh(Export_Base):
 				wm = bpy.context.window_manager
 				wm.progress_begin(0, len(mesh.polygons))
 				
-				poly_counter = 1
+				poly_counter = 0
 				update_counter = 0
 				
 				normals = []
@@ -214,13 +219,20 @@ class Export_Mesh(Export_Base):
 				
 				# Create component lists
 				
+				print("poly_count :")
+				print(len(mesh.polygons))
+				print("\n")
+
+				
 				for polygon in mesh.polygons :
 				
 					poly_indices = []
 					
-					if poly_counter == 100:
-						wm.progress_update(update_counter)
+					if poly_counter == 10000:
 						update_counter = update_counter + 1
+						percent = int(100 * ((float(update_counter) * 10000) / float(len(mesh.polygons)) ))
+						wm.progress_update(percent)
+						print( "CollectVertexData: {}%".format(percent) )
 						poly_counter = 0
 						
 					poly_counter = poly_counter + 1
@@ -279,24 +291,25 @@ class Export_Mesh(Export_Base):
 				wm = bpy.context.window_manager
 				wm.progress_begin(0, len(mesh.polygons))
 				
-				poly_counter = 1
+				poly_counter = 0
 				update_counter = 0
 				
 				for polygon in mesh.polygons :
 				
-					if poly_counter == 100:
-						wm.progress_update(update_counter)
+					if poly_counter == 1000:
 						update_counter = update_counter + 1
+						percent = int(100 * ((float(update_counter) * 1000) / float(len(mesh.polygons)) ))
+						wm.progress_update(percent)
+						print( "Convert: {}%".format(percent) )
 						poly_counter = 0
-						
+
 					poly_counter = poly_counter + 1
 					
 					vertex_count = len(polygon.vertices)
-
 					vertex_indices = []
 					normal_indices = []
 
-					# array of lists for n texture coordinate sets.
+					# Array of lists for n texture coordinate sets.
 					texture_indices = [[] for i in repeat(None, num_tex_coord_sets)]
 					
 					#print("\n\n[poly]\n")
@@ -596,9 +609,13 @@ class Export_Mesh(Export_Base):
 		self.exporter.Log("Converting mesh ...")
 		export_mesh = Exporter_Mesh()
 		
+		self.exporter.Log("CollectVertexData ...")
 		export_mesh.CollectVertexData(mesh, bobj, self.exporter)
+		
+		self.exporter.Log("Convert ...")
 		export_mesh.Convert(mesh, self.exporter)
 	
+		self.exporter.Log("Write ...")
 		self.exporter.file.Write("<mesh>\n")
 		self.exporter.file.Indent()
 

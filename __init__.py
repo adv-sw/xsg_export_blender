@@ -69,6 +69,7 @@ class XSG_Export(bpy.types.Operator) :
 		file = open(pref_path)
 		selected_only = file.read(1) == '1'
 		export_animation = file.read(1) == '1'
+		seperate  = file.read(1) == '1'
 		file.close()
 	else :
 		selected_only = False
@@ -78,10 +79,12 @@ class XSG_Export(bpy.types.Operator) :
 	bl_label = "<><> Export XSG"
 	filepath: StringProperty(subtype='FILE_PATH')
 
+
 	# Export options
-	selected_only = BoolProperty(name="Selected objects only", description="Export only selected objects", default=selected_only)
-	export_animation = BoolProperty(name="Export Animation", description="Export animation.", default=export_animation)
-	verbose = BoolProperty(name="Verbose",  description="Additional information sent to the console for output",  default=False)
+	selected_only: BoolProperty(name="Selection Only", description="Export selected objects only",default=selected_only,)
+	seperate: BoolProperty(name="Each in selection to seperate files", description="Export selected objects to seperate files",default=seperate,)
+	export_animation: BoolProperty(name="Export Animation", description="Export animation.", default=export_animation)
+	verbose: BoolProperty(name="Verbose",  description="Additional information sent to the console for output",  default=False)
 	
 	def execute(self, context):
 		self.filepath = bpy.path.ensure_ext(self.filepath, ".xsg")
@@ -105,6 +108,10 @@ class XSG_Export(bpy.types.Operator) :
 		else:
 			file.write('0')
 			
+		if self.seperate:
+			file.write('1')
+		else:
+			file.write('0')
 			
 		file.close()
 		

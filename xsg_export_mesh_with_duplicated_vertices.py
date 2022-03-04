@@ -16,7 +16,7 @@ class Export_Mesh(Export_Base):
 	def __repr__(self):
 		return "[Export_Mesh: {}]".format(self.name)
 
-	def Write(self):
+	def Write(self, flags):
 
 		# Current implementation requires an identity transform on skinned mesh as vertices are calculated in world space not skin space.
 		blender_armatures = Util.Modifier_Armatures_Collect(self.blender_object)
@@ -24,6 +24,11 @@ class Export_Mesh(Export_Base):
 			t = Matrix()
 		else:
 			t = self.exporter.Transform_Convert(self.blender_object.matrix_local)
+            
+		if (flags & 1) != 0 : # skip position
+			t[0][3]=0
+			t[1][3]=0
+			t[2][3]=0
 			
 		self.Write_Node_Begin(self.name, t)
 
