@@ -25,13 +25,13 @@ class Export_Material:
 			exp.file.Unindent()
 			return
 			
-		exp.file.Write('<material id="{}'.format(Util.SafeName(mtl.name)))
-		exp.file.Write('">\n', Indent=False)
-		exp.file.Indent()
-		
+		exp.file.Write('<material id="{}"'.format(Util.SafeName(mtl.name)))
+        
 		normal_map_input = None
 		
 		if mtl.node_tree == None:
+			exp.file.Write('">\n', Indent=False)
+			exp.file.Indent()
 			
 			# Diffuse
 			clr = mtl.diffuse_color * mtl.diffuse_intensity
@@ -50,6 +50,15 @@ class Export_Material:
 			
 			if principled_bsdf != None:
 			
+				alpha_input = principled_bsdf.inputs['Alpha']
+				alpha_value = alpha_input.default_value
+				
+				if alpha_value != 1.0:
+					exp.file.Write(' opacity="{:f}"'.format(alpha_value))
+            
+				exp.file.Write('>\n', Indent=False)
+				exp.file.Indent()
+
 				diffuse = principled_bsdf.inputs[0]
 				skip = False				
 				
