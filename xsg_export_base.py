@@ -39,6 +39,6 @@ class Export_Base: # Base class, do not use directly
 		self.exporter.file.Unindent()
 		self.exporter.file.Write('</node>\n')
 		
-	def Write_Children(self):
+	def Write_Children(self, flags):
 		for child in Util.SortByNameField(self.children):
-			child.Write()
+			child.Write(flags)

@@ -80,7 +80,7 @@ class XSG_Export(bpy.types.Operator) :
 	filepath: StringProperty(subtype='FILE_PATH')
 
 
-	# Export options
+	# Export Options
 	selected_only: BoolProperty(name="Selection Only", description="Export selected objects only",default=selected_only,)
 	seperate: BoolProperty(name="Each in selection to seperate files", description="Export selected objects to seperate files",default=seperate,)
 	export_animation: BoolProperty(name="Export Animation", description="Export animation.", default=export_animation)
