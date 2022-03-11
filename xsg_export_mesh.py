@@ -219,9 +219,7 @@ class Export_Mesh(Export_Base):
 
 				# Create component lists
 
-				print("poly_count :")
-				print(len(mesh.polygons))
-				print("\n")
+				print("poly_count : {}\n".format(len(mesh.polygons)))
 
 				for polygon in mesh.polygons :
 
@@ -262,11 +260,8 @@ class Export_Mesh(Export_Base):
 				# Sort normals and remove duplicates
 				self.vertex_normals = sort_and_remove_duplicates(normals)
 
-				#print("normal_count :")
-				#print(len(self.vertex_normals))
-				#print("\n")
-
-				#print("num_tex_coord_sets: {}".format(num_tex_coord_sets))
+				#print("normal_count : {}\n".format(len(self.vertex_normals))
+				#print("num_tex_coord_sets: {}\n".format(num_tex_coord_sets))
 
 				self.texture_coordinates = [[] for i in repeat(None, num_tex_coord_sets)]
 
@@ -417,7 +412,7 @@ class Export_Mesh(Export_Base):
 
 					exp.file.Write("</normal>\n", Indent=False)
 
-					# texture coordinates
+					# Texture coordinates
 
 					if len(self.texture_coordinates) > 0 :
 
@@ -498,7 +493,7 @@ class Export_Mesh(Export_Base):
 					exp.file.Write("</normal>\n", Indent=False)
 
 
-				# texture
+				# Texture
 
 				if len(self.texture_coordinates) > 0 :
 
@@ -677,8 +672,10 @@ class Export_Mesh(Export_Base):
 
 
 		# Multiple armature objects are gathered but only one armature per mesh is exported.
-		print("Modifier_Armatures_Collect")
+
 		blender_armatures = Util.Modifier_Armatures_Collect(self.blender_object)
+
+		print("blender_armatures: {}".format(len(blender_armatures)))
 
 		for blender_armature in blender_armatures:
 
