@@ -24,7 +24,7 @@ class Export_Base: # Base class, do not use directly
 			t[2][3]=0
         
 		self.Write_Node_Begin(self.name, t)
-		self.Write_Children()
+		self.Write_Children(flags)
 		self.Write_Node_End()
 
 	def Write_Node_Begin(self, id, node_to_parent):

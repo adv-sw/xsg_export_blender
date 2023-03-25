@@ -66,7 +66,7 @@ class Export_Mesh(Export_Base):
 		# Cleanup
 		bpy.data.meshes.remove(mesh)
 
-		self.Write_Children()
+		self.Write_Children(flags)
 		self.Write_Node_End()
 
 	

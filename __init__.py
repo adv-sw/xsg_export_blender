@@ -58,13 +58,13 @@ from struct import pack
 
 class XSG_Export(bpy.types.Operator) :
 	"""Export to XSG"""
-
+	
 	prefs = []
 
-	# Read Preferences
+	# Read preferences
 	userdir = bpy.utils.resource_path('USER')
 	pref_path  = os.path.join(userdir, "adv_blender_xsg_export.cfg")
-
+	
 	if os.path.isfile(pref_path) :
 		file = open(pref_path)
 		selected_only = file.read(1) == '1'
@@ -80,50 +80,49 @@ class XSG_Export(bpy.types.Operator) :
 	filepath: StringProperty(subtype='FILE_PATH')
 
 
-	# Export Options
-	selected_only: BoolProperty(name="Selection Only", description="Export selected objects only",default=selected_only,)
-	seperate: BoolProperty(name="Each in selection to seperate files", description="Export selected objects to seperate files",default=seperate,)
-	export_animation: BoolProperty(name="Export Animation", description="Export animation.", default=export_animation)
-	verbose: BoolProperty(name="Verbose",  description="Additional information sent to the console for output",  default=False)
-
+	# Export options
+	selected_only: BoolProperty(name="Selection Only", description="Export selected objects only", default=False)
+	seperate: BoolProperty(name="Each in selection to seperate files", description="Export selected objects to seperate files", default=False)
+	export_animation: BoolProperty(name="Export Animation", description="Export animation.", default=False)
+	verbose: BoolProperty(name="Verbose",  description="Additional information sent to the console for output", default=False)
+	
 	def execute(self, context):
-		
-		#self.filepath = bpy.path.ensure_ext(fname, ".xsg")
+		self.filepath = bpy.path.ensure_ext(self.filepath, ".xsg")
 
 		from . import xsg_export
 		xsg_export.XSG_Export(self, context)
-
+		
 		# Serialize preferences
 		userdir = bpy.utils.resource_path('USER')
 		pref_path  = os.path.join(userdir,"adv_blender_xsg_export.cfg")
-
+		
 		file = open(pref_path, 'w')
-
+		
 		if self.selected_only:
 			file.write('1')
 		else:
 			file.write('0')
-
+		
 		if self.export_animation:
 			file.write('1')
 		else:
 			file.write('0')
-
+			
 		if self.seperate:
 			file.write('1')
 		else:
 			file.write('0')
-
+			
 		file.close()
-
+		
+	
+		
+	
 		return {'FINISHED'}
 
 	def invoke(self, context, event):
 		if not self.filepath:
-			fname = bpy.path.basename(bpy.context.blend_data.filepath)
-			fname = os.path.splitext(fname)[0]
-			self.filepath = bpy.path.ensure_ext(fname, ".xsg")
-
+			self.filepath = bpy.path.ensure_ext(bpy.data.filepath, ".xsg")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 

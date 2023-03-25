@@ -4,7 +4,6 @@ import bpy
 import os, sys
 import shutil
 from mathutils import *
-from pprint import pprint
 
 
 # Static utilities
@@ -84,14 +83,15 @@ class Util:
 		
 	@staticmethod
 	def Modifier_Armatures_Collect(blender_object):
-		#print("modifer_count:  {}".format(len(blender_object.modifiers)))
-		skinning_modifier_list = []
-		for modifier in blender_object.modifiers:
-			if modifier.type == 'ARMATURE':# and modifier.show_viewport]:
-				skinning_modifier_list.append(modifier)
-				pprint(dir(modifier))
 	
-		return skinning_modifier_list
+		skinning_modifier_list = [modifier 
+		for modifier in blender_object.modifiers
+		if modifier.type == 'ARMATURE' and modifier.show_viewport]
+	
+		if not skinning_modifier_list:
+			return []
+	
+		return [modifier.object for modifier in skinning_modifier_list]
 
 		
 	# Used on lists of Blender objects and lists of export_objects, both of which have a name field
